@@ -1,17 +1,19 @@
-from flask import Flask, jsonify, request, render_template
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask import Flask, jsonify, request
+from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for the entire app
-app.config['JWT_SECRET_KEY'] = 'your-secret-key'
-jwt = JWTManager(app)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///myapp.db'
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+CORS(app)
 
-# Simulated user data (replace with a real user database)
-users = {
-    "user1": "password1",
-    "user2": "password2"
-}
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(60), nullable=False)
+
 
 # Authentication endpoint
 @app.route('/login', methods=['POST'])
