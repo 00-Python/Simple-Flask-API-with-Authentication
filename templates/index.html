@@ -10,9 +10,17 @@
         <input type="password" id="password" placeholder="Password" required>
         <button type="submit">Login</button>
     </form>
+    <div id="protected-content" style="display: none;">
+        <h2>Protected Content</h2>
+        <p id="protected-message"></p>
+    </div>
     
     <script>
-        document.getElementById('login-form').addEventListener('submit', async function(event) {
+        const loginForm = document.getElementById('login-form');
+        const protectedContent = document.getElementById('protected-content');
+        const protectedMessage = document.getElementById('protected-message');
+
+        loginForm.addEventListener('submit', async function(event) {
             event.preventDefault();
             
             const username = document.getElementById('username').value;
@@ -29,12 +37,36 @@
             const data = await response.json();
             if (response.ok) {
                 const accessToken = data.access_token;
-                localStorage.setItem('access_token', accessToken); // Store token in local storage
+                localStorage.setItem('access_token', accessToken);
                 alert('Login successful!');
+                showProtectedContent();
             } else {
                 alert('Login failed. Check your credentials.');
             }
         });
+
+        function showProtectedContent() {
+            const accessToken = localStorage.getItem('access_token');
+            if (accessToken) {
+                fetch('http://localhost:5000/protected', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    protectedMessage.textContent = data.message;
+                    protectedContent.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to fetch protected content.');
+                });
+            } else {
+                alert('Access token not found. Please log in.');
+            }
+        }
     </script>
 </body>
 </html>
